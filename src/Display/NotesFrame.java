@@ -23,6 +23,7 @@ public class NotesFrame extends JFrame {
     private JButton clearNoteText;
     private JButton clearTitle;
     private JButton search;
+    private JButton searchByKeyword; // Neuer Button für die Schlagwortsuche
     private JButton deleteNote;
 
     // TextArea for note text
@@ -31,6 +32,7 @@ public class NotesFrame extends JFrame {
     // TextFields for input
     JTextField titleField;
     JTextField findNoteFromTitle;
+    JTextField findNoteByKeyword; // Neues Textfeld für die Schlagwortsuche
 
     // Class Objects
     Database database;
@@ -47,9 +49,11 @@ public class NotesFrame extends JFrame {
         clearTitle = new JButton("Überschrift leeren");
         deleteNote = new JButton("Notiz Löschen");
         search = new JButton("Finde");
+        searchByKeyword = new JButton("Schlagwortsuche"); // Initialisieren des neuen Buttons
         noteText = new JTextArea();
         titleField = new JTextField("Überschrift");
         findNoteFromTitle = new JTextField("Notizüberschrift");
+        findNoteByKeyword = new JTextField("Schlagwort"); // Initialisieren des neuen Textfelds
 
         editButtons();
         initTextArea();
@@ -77,7 +81,7 @@ public class NotesFrame extends JFrame {
     }
 
     private void editButtons() {
-        JButton[] taskButtons = {createNote, findNote, saveNote, clearNoteText, clearTitle, search , deleteNote};
+        JButton[] taskButtons = {createNote, findNote, saveNote, clearNoteText, clearTitle, search, deleteNote, searchByKeyword}; // Fügen Sie den neuen Button zur Liste hinzu
         for (JButton b : taskButtons) {
             b.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1, true));
             b.setFocusable(false);
@@ -102,8 +106,9 @@ public class NotesFrame extends JFrame {
         saveNote.setBounds(0, 250, 150, 30);
         clearTitle.setBounds(350, 0, 120, 30);
         search.setBounds(350, 40, 120, 30);
+        searchByKeyword.setBounds(350, 80, 120, 30); // Setzen Sie die Bounds für den neuen Button
         clearNoteText.setBounds(330, 250, 150, 30);
-        deleteNote.setBounds(190 , 250 , 100 , 30);
+        deleteNote.setBounds(190, 250, 100, 30);
     }
 
     private void initTextArea() {
@@ -114,7 +119,7 @@ public class NotesFrame extends JFrame {
     }
 
     private void initTextFields() {
-        JTextField[] fields = {titleField, findNoteFromTitle};
+        JTextField[] fields = {titleField, findNoteFromTitle, findNoteByKeyword}; // Fügen Sie das neue Textfeld zur Liste hinzu
         for (JTextField f : fields) {
             f.addFocusListener(new FocusListener() {
                 @Override
@@ -137,6 +142,11 @@ public class NotesFrame extends JFrame {
         findNoteFromTitle.setBackground(Color.WHITE);
         findNoteFromTitle.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1, true));
         addingComponents(findNoteFromTitle);
+
+        findNoteByKeyword.setBounds(120, 80, 200, 30); // Setzen Sie die Bounds für das neue Textfeld
+        findNoteByKeyword.setBackground(Color.WHITE);
+        findNoteByKeyword.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1, true));
+        addingComponents(findNoteByKeyword);
     }
 
     private void buttonListener(ActionEvent e) {
@@ -148,7 +158,9 @@ public class NotesFrame extends JFrame {
             checkFieldsText();
         } else if (e.getSource() == search) {
             searchNote(findNoteFromTitle.getText());
-        } else if(e.getSource() == deleteNote){
+        } else if (e.getSource() == searchByKeyword) {
+            searchNoteByKeyword(findNoteByKeyword.getText()); // Rufen Sie die Methode zur Schlagwortsuche auf
+        } else if (e.getSource() == deleteNote) {
             deleteSelectedNote();
         }
     }
@@ -180,6 +192,22 @@ public class NotesFrame extends JFrame {
         }
     }
 
+    private void searchNoteByKeyword(String keyword) {
+        if (!keyword.equals("")) {
+            List<Note> notes = database.getNotesByKeyword(keyword); // Annahme: Eine Methode, die Notizen anhand eines Schlagworts findet
+            if (notes != null && !notes.isEmpty()) {
+                StringBuilder findNotesText = new StringBuilder();
+                for (Note note : notes) {
+                    findNotesText.append("ID: ").append(note.getId()).append("\nÜberschrift: ").append(note.getUeberschrift()).append("\nNotiz: ").append(note.getNotizText()).append("\n\n");
+                }
+                JOptionPane.showMessageDialog(null, findNotesText.toString(), "Notizen gefunden", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(null, "Keine Notizen gefunden.", "Fehler", JOptionPane.ERROR_MESSAGE);
+            }
+        } else {
+            JOptionPane.showMessageDialog(null, "Bitte geben Sie ein Schlagwort ein.", "Fehler", JOptionPane.ERROR_MESSAGE);
+        }
+    }
 
     private void initNoteScroller() {
         noteScroller.setBounds(0, 300, 490, 450);
@@ -225,7 +253,6 @@ public class NotesFrame extends JFrame {
         }
     }
 
-
     private void addingComponents(Component component) {
         if (component != null) {
             this.add(component);
@@ -235,6 +262,5 @@ public class NotesFrame extends JFrame {
     public static void main(String[] args) {
         NotesFrame notesFrame = new NotesFrame();
         notesFrame.initGui();
-
     }
 }
