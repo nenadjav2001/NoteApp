@@ -124,7 +124,32 @@ public class Database {
             throw new IllegalStateException("Fehler beim Löschen der Notiz: " + e.getMessage());
         }
     }
+public List<Note> getNotesByKeyword(String keyword) {
+        String sql = "SELECT id, überschrift, notizText FROM notes WHERE notizText LIKE ?";
+        List<Note> notes = new ArrayList<>();
 
+        try (Connection connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+
+            // Das Schlagwort für die LIKE-Abfrage vorbereiten
+            preparedStatement.setString(1, "%" + keyword + "%");
+
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            // Schleife durch die Ergebnisse und füge sie zur Liste hinzu
+            while (resultSet.next()) {
+                int id = resultSet.getInt("id");
+                String ueberschrift = resultSet.getString("überschrift");
+                String notizText = resultSet.getString("notizText");
+                Note note = new Note(id, ueberschrift, notizText);
+                notes.add(note);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new IllegalStateException("Fehler beim Abrufen der Notizen: " + e.getMessage());
+        }
+        return notes;
+    }
 
 
 
